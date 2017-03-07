@@ -34,3 +34,14 @@
                           (dispatch [:set-in [:message-data data-type message-id] result])
                           (when on-requested (on-requested result)))]
           (status/call-jail chat-id path params callback))))))
+
+(handlers/register-handler :execute-command-immediately
+  (handlers/side-effect!
+    (fn [_ [_ {command-name :name :as command}]]
+      (case (keyword command-name)
+        :grant-permissions
+        (dispatch [:request-permissions
+                   [:read-external-storage :write-external-storage]
+                   #(dispatch [:initialize-geth])
+                   #(dispatch [:account-generation-failure-message])])
+        (log/debug "ignoring command: " command)))))

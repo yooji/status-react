@@ -10,6 +10,7 @@
 (def input-spacing-top 16)
 
 (def crazy-math-message-id "crazy-math-message")
+(def account-generation-failure-message-id "account-generation-failure-message")
 (def passphrase-message-id "passphraze-message")
 (def intro-status-message-id "intro-status")
 (def intro-message1-id "intro-message1")
