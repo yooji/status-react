@@ -33,7 +33,7 @@ Command.prototype.create = function (com) {
     this.params = com.params || [];
     this.preview = com.preview;
     this["short-preview"] = com.shortPreview;
-    this["suggestions-trigger"] = com.suggestionsTrigger || "on-change";
+    this["on-send"] = com.onSend;
     this.fullscreen = com.fullscreen;
     this.request = com.request;
     this.addToCatalog();
@@ -124,7 +124,13 @@ function webView(url) {
     }];
 }
 
-function validationMessage(titleText, descriptionText) {
+function bridgedWebView(url) {
+  return ['bridged-web-view', {
+    url: url
+  }];
+}
+
+/*function validationMessage(titleText, descriptionText) {
     var titleStyle = {
         style: {
             color: "white",
@@ -151,6 +157,10 @@ function validationMessage(titleText, descriptionText) {
         },
         [title, description]
     );
+}*/
+
+function validationMessage(titleText, descriptionText) {
+    return ['validation-message', titleText, descriptionText];
 }
 
 var status = {
@@ -180,7 +190,8 @@ var status = {
         PASSWORD: 'password'
     },
     events: {
-        SET_VALUE: 'set-value'
+        SET_VALUE: 'set-value',
+        SET_COMMAND_ARGUMENT: 'set-command-argument'
     },
     components: {
         view: view,
@@ -189,7 +200,8 @@ var status = {
         touchable: touchable,
         scrollView: scrollView,
         webView: webView,
-        validationMessage: validationMessage
+        validationMessage: validationMessage,
+        bridgedWebView: bridgedWebView
     }
 };
 
