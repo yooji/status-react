@@ -62,6 +62,7 @@
         set-layout-width     #(r/set-state component {:width %})
         set-layout-height    #(r/set-state component {:height %})
         input-text           (subscribe [:chat :input-text])
+        masked-text          (subscribe [:chat :masked-text])
         current-param        (subscribe [:chat :current-param])
         command              (subscribe [:selected-chat-command])
         sending-in-progress? (subscribe [:chat-ui-props :sending-in-progress?])]
@@ -80,7 +81,7 @@
               :accessibility-label    id/chat-message-input
               :blur-on-submit         true
               :multiline              true
-              :default-value          (or @input-text "")
+              :default-value          (or @masked-text @input-text "")
               :editable               (not @sending-in-progress?)
               :on-blur                #(do (dispatch [:set-chat-ui-props :input-focused? false])
                                            (set-layout-height 0))
@@ -104,7 +105,7 @@
               :on-focus               #(do (dispatch [:set-chat-ui-props :input-focused? true])
                                            (dispatch [:set-chat-ui-props :show-emoji? false]))
               :style                  style/input-view}]
-            [invisible-input {:value            @input-text
+            [invisible-input {:value            (or @masked-text @input-text)
                               :set-layout-width set-layout-width}]
             [input-helper {:command command
                            :width   width}]

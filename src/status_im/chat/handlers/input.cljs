@@ -3,6 +3,7 @@
             [taoensso.timbre :as log]
             [status-im.chat.constants :as const]
             [status-im.chat.models.input :as input-model]
+            [status-im.chat.models.password-input :as password-input]
             [status-im.chat.suggestions :as suggestions]
             [status-im.components.react :as react-comp]
             [status-im.components.status :as status]
@@ -24,7 +25,7 @@
          (first))))
 
 (def text-maskers
-  [])
+  [password-input/masker])
 
 (handlers/register-handler
   :set-chat-input-text
@@ -32,18 +33,30 @@
     (let [chat-id   (or chat-id current-chat-id)
           selection (get-in chat-ui-props [chat-id :selection])]
       (dispatch [:update-suggestions chat-id text])
-
+      ;; the code bellow allows text maskers to work
       (if-let [{old-command :command
                 old-args    :args} (input-model/selected-chat-command db chat-id)]
         (let [new-text      (input-model/split-command-args text)
               new-args      (rest new-text)
               arg-pos       (changed-arg-position old-args new-args)
               current-param (get-in old-command [:params arg-pos])
-              new-params    {:input-text    text
+              text-masker   (first (filter #((:execute-when %) current-param) text-maskers))
+              new-params    {:masked-text   (when text-masker
+                                              (let [{:keys [get-masked-text]} text-masker]
+                                                (get-masked-text new-text arg-pos)))
+                             :input-text    (if text-masker
+                                              (let [{:keys [make-change]} text-masker]
+                                                (make-change {:old-command old-command
+                                                              :old-args    old-args
+                                                              :new-args    new-args
+                                                              :arg-pos     arg-pos
+                                                              :selection   selection}))
+                                              text)
                              :current-param current-param}]
           (update-in db [:chats chat-id] merge new-params))
         (cond-> (assoc-in db [:chats chat-id :input-text] text)
-                (nil? text) (update-in [:chats chat-id] merge {:current-param nil}))))))
+                (nil? text) (update-in [:chats chat-id] merge {:masked-text   nil
+                                                               :current-param nil}))))))
 
 (handlers/register-handler
   :add-to-chat-input-text
