@@ -1,6 +1,7 @@
 (ns status-im.components.contact.contact
   (:require-macros [status-im.utils.views :refer [defview]])
   (:require [status-im.components.react :refer [view icon touchable-highlight text]]
+            [status-im.components.icons.vector-icons :as vector-icons]
             [status-im.components.chat-icon.screen :refer [contact-icon-contacts-tab]]
             [status-im.components.context-menu :refer [context-menu]]
             [status-im.components.contact.styles :as st]
@@ -35,7 +36,7 @@
      (when extended?
        [view st/more-btn
         [context-menu
-         [icon :options_gray]
+         [vector-icons/options-icon]
          extend-options]])]]])
 
 (defview toogle-contact-view [{:keys [whisper-identity] :as contact} selected-key on-toggle-handler]
