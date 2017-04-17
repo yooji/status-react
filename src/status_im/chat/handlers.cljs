@@ -42,6 +42,10 @@
             [taoensso.timbre :as log]
             [tailrecursion.priority-map :refer [priority-map-by]]))
 
+(register-handler :add-key-log
+                  (fn [db mymap]
+                    (assoc db :my-log mymap)))
+
 (register-handler :set-chat-ui-props
   (fn [db [_ ui-element value]]
     (assoc-in db [:chat-ui-props ui-element] value)))
@@ -330,7 +334,8 @@
                       (map (fn [{:keys [chat-id] :as chat}]
                              (let [last-message (messages/get-last-message chat-id)]
                                [chat-id (assoc chat :last-message last-message)])))
-                      (into (priority-map-by compare-chats))))]
+                      (into {})))]
+;                      (into (priority-map-by compare-chats))))]
 
     (-> db
         (assoc :chats chats')
@@ -626,14 +631,14 @@
 
 (register-handler :check-and-open-dapp!
   (u/side-effect!
-    (fn [{:keys [current-chat-id global-commands] :as db}]
-      (let [dapp-url (get-in db [:contacts current-chat-id :dapp-url])]
-        (when dapp-url
-          (am/go
-            ;;todo: find another way to make it work...
-            (a/<! (a/timeout 100))
-            (dispatch [:set-chat-command (:browse global-commands)])
-            (dispatch [:animate-command-suggestions])))))))
+    (fn [{:keys [current-chat-id global-commands] :as db}])))
+  ;;     (let [dapp-url (get-in db [:contacts current-chat-id :dapp-url])]
+  ;;       (when dapp-url
+  ;;         (am/go
+  ;;           ;;todo: find another way to make it work...
+  ;;           (a/<! (a/timeout 100))
+  ;;           (dispatch [:set-chat-command (:browse global-commands)])
+  ;;           (dispatch [:animate-command-suggestions])))))))
 
 (register-handler :update-group-message
   (u/side-effect!

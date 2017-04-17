@@ -14,14 +14,23 @@
             [status-im.utils.js-resources :as js-res]
             [status-im.chat.sign-up :as sign-up]))
 
+(defn fetch-group-chat-commands [app-db group-chat-id callback contacts-key]
+      (let [contacts (get-in app-db [:chats group-chat-id :contacts])
+            identities (mapv :identity contacts)
+            my-contacts (mapv #(get contacts-key %) identities)]
+        (doseq [contact my-contacts] (dispatch [::fetch-commands! {:contact contact}]))))
+
 (defn load-commands!
-  [{:keys [current-chat-id contacts]} [identity callback]]
+  [{:keys [current-chat-id contacts] :as db} [identity callback]]
   (let [identity (or identity current-chat-id)
         contact  (or (get contacts identity)
-                     sign-up/console-contact)]
+                     sign-up/console-contact)
+        group-chat? (subscribe [:group-chat?])]
     (when identity
-      (dispatch [::fetch-commands! {:contact  contact
-                                    :callback callback}])))
+      (if @group-chat?
+        (fetch-group-chat-commands db identity callback contacts)
+        (dispatch [::fetch-commands! {:contact  contact
+                                      :callback callback}]))))
   ;; todo uncomment
   #_(if-let [{:keys [file]} (commands/get-by-chat-id identity)]
       (dispatch [::parse-commands! identity file])
@@ -107,6 +116,7 @@
                    (not= console-chat-id id)
                    (h/matches (name n) "password"))))
        (into {})))
+  
 
 (defn add-commands
   [db [id _ {:keys [commands responses subscriptions]}]]
@@ -114,21 +124,33 @@
         commands'      (filter-forbidden-names account id commands)
         global-command (:global commands')
         commands''     (apply dissoc commands' [:init :global])
-        responses'     (filter-forbidden-names account id responses)]
+        responses'     (filter-forbidden-names account id responses)
+        group-chat?    @(subscribe [:group-chat?])
+        current-chat-id @(subscribe [:get-current-chat-id])
+        current-commands (into {} (get-in db [:chats current-chat-id :commands]))]
+    (dispatch [:add-key-log id])
     (cond-> db
+      
+      (get-in db [:chats id])
+      (update-in [:chats id] assoc
+                 :commands  (mark-as :command commands'')
+                 :responses (mark-as :response responses')
+                 :commands-loaded true
+                 :subscriptions subscriptions
+                 :global-command global-command)
 
-            (get-in db [:chats id])
-            (update-in [:chats id] assoc
-                       :commands (mark-as :command commands'')
-                       :responses (mark-as :response responses')
-                       :commands-loaded true
-                       :subscriptions subscriptions
-                       :global-command global-command)
+      group-chat?
+      (update-in [:chats current-chat-id] assoc
+                 :commands (conj current-commands (mark-as :command commands''))
+                 :responses (mark-as :response responses')
+                 :commands-loaded true
+                 :subscriptions subscriptions
+                 :global-command global-command)
 
-            global-command
-            (update :global-commands assoc (keyword id)
-                    (assoc global-command :bot id
-                                          :type :command)))))
+      global-command
+      (update :global-commands assoc (keyword id)
+              (assoc global-command :bot id
+                     :type :command)))))
 
 (defn save-commands-js!
   [_ [id file]]
