@@ -18,7 +18,8 @@
       (let [contacts (get-in app-db [:chats group-chat-id :contacts])
             identities (mapv :identity contacts)
             my-contacts (mapv #(get contacts-key %) identities)]
-        (doseq [contact my-contacts] (dispatch [::fetch-commands! {:contact contact}]))))
+        (doseq [contact my-contacts] (dispatch [::fetch-commands! {:contact contact
+                                                                   :callback callback}]))))
 
 (defn load-commands!
   [{:keys [current-chat-id contacts] :as db} [identity callback]]
@@ -118,22 +119,39 @@
        (into {})))
   
 
+(defn add-group-chat-command-owner-and-name
+  [id commands]
+  (let [group-chat? (subscribe [:group-chat?])]
+    (if @group-chat?
+      (->> commands
+           (map (fn [[k v]]
+                  [k (assoc v
+                         :command-owner (str id)
+                         :group-chat-command-name (str id "/" (:name v)))]))
+           (into {}))
+      commands)))
+
+(defn process-new-commands [account id commands]
+  (->> commands
+       (filter-forbidden-names account id)
+       (add-group-chat-command-owner-and-name id)
+       (mark-as :command)))
+
 (defn add-commands
   [db [id _ {:keys [commands responses subscriptions]}]]
   (let [account        @(subscribe [:get-current-account])
-        commands'      (filter-forbidden-names account id commands)
+        commands'      (process-new-commands account id commands)
         global-command (:global commands')
         commands''     (apply dissoc commands' [:init :global])
         responses'     (filter-forbidden-names account id responses)
         group-chat?    @(subscribe [:group-chat?])
         current-chat-id @(subscribe [:get-current-chat-id])
         current-commands (into {} (get-in db [:chats current-chat-id :commands]))]
-    (dispatch [:add-key-log id])
     (cond-> db
       
       (get-in db [:chats id])
       (update-in [:chats id] assoc
-                 :commands  (mark-as :command commands'')
+                 :commands commands''
                  :responses (mark-as :response responses')
                  :commands-loaded true
                  :subscriptions subscriptions
@@ -141,7 +159,7 @@
 
       group-chat?
       (update-in [:chats current-chat-id] assoc
-                 :commands (conj current-commands (mark-as :command commands''))
+                 :commands (conj current-commands commands'')
                  :responses (mark-as :response responses')
                  :commands-loaded true
                  :subscriptions subscriptions

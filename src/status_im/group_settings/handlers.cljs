@@ -65,6 +65,18 @@
   (fn [db [_ k v]]
     (assoc-in db [:group-settings k] v)))
 
+(defn remove-member-commands-from-chat!
+  [{:keys [current-chat-id chats selected-participants] :as db}]
+  (let [equalvals (fn [p [k v]] (contains? p (:command-owner v)))
+        commands (get-in chats [current-chat-id :commands])
+        doomed-commands (into []
+                              (map first
+                                   (filter #(equalvals selected-participants %) commands)))]
+    (reduce #(update-in % [:chats current-chat-id :commands] dissoc %2) db doomed-commands)))
+
+(register-handler :remove-member-commands-from-chat!
+                  remove-member-commands-from-chat!)
+
 (defn remove-identities [collection identities]
   (remove #(identities (:identity %)) collection))
 

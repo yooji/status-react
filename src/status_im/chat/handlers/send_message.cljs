@@ -60,8 +60,10 @@
           (not (s/blank? text))
           (dispatch [::prepare-message data]))))))
 
-(defn console-command? [chat-id command-name]
-  (and (= console-chat-id chat-id)
+(defn console-command? [chat-id command-owner command-name]
+  (and (or
+        (= console-chat-id command-owner)
+        (= console-chat-id chat-id))
        (console/commands-names (keyword command-name))))
 
 (register-handler ::check-commands-handlers!
@@ -69,13 +71,14 @@
     (fn [_ [_ {:keys [command message chat-id] :as params}]]
       (let [{:keys [command] :as message} command]
         (let [params'      (assoc params :command-message message)
-              command-name (:name (:command message))]
+              command-name (:name (:command message))
+              command-owner (:command-owner command)]
           (if (:sent-to-jail? message)
             ;; todo there could be other reasons for "long-running"
             ;; hanling of the command besides sendTransaction
             (dispatch [:navigate-to-modal :confirm])
             (cond
-              (console-command? chat-id command-name)
+              (console-command? chat-id command-owner command-name)
               (dispatch [:invoke-console-command-handler! params'])
 
               (:has-handler command)
@@ -155,7 +158,7 @@
     (fn [db [_ {:keys [chat-id address command-message]
                 :as   parameters}]]
       (let [{:keys [id command params]} command-message
-            {:keys [type name bot]} command
+            {:keys [type name bot command-owner]} command
             path     [(if (= :command type) :commands :responses)
                       name
                       :handler]
@@ -164,7 +167,7 @@
                       :context    {:from       address
                                    :to         to
                                    :message-id id}}
-            identity (or bot chat-id)]
+            identity (or command-owner bot chat-id)]
         (dispatch
           [:check-and-load-commands!
            identity

@@ -30,6 +30,7 @@
   [{:keys [contacts current-chat-id canceled-command] :as db} _]
   (when-not canceled-command
     (let [{:keys [command content params]} (get-in db [:chats current-chat-id :command-input])
+          command-owner (:command-owner command)
           data     (get-in db [:local-storage current-chat-id])
           {:keys [name type bot]} command
           path     [(if (= :command type) :commands :responses)
@@ -37,10 +38,10 @@
                     :params
                     0
                     :suggestions]
-          identity (or bot current-chat-id)
+          identity (or command-owner bot current-chat-id)
           contact  (get contacts current-chat-id)
           params   {:parameters (or params {})
-                    :context    (merge {:data    data
+                    :context    (merge {:data    (or command-owner data)
                                         :contact contact}
                                        (command-dependent-context-params command))}]
       (dispatch
@@ -257,6 +258,7 @@
       (let [command-input'    (or command-input (commands/get-command-input db))
             {:keys [parameter-idx params command]} command-input'
             {:keys [name type bot]} command
+            command-owner (:command-owner command)
             current-parameter (-> command
                                   :params
                                   (get parameter-idx)
@@ -270,7 +272,7 @@
                                :validator]
             parameters        {:context    context
                                :parameters params}
-            identity          (or bot chat-id)]
+            identity          (or command-owner bot chat-id)]
         (dispatch
           [:check-and-load-commands!
            identity
@@ -289,7 +291,9 @@
                        chat-id
                        #(dispatch [:request-command-preview message data-type])])
             (dispatch [:load-commands! chat-id]))
-        (let [data-type (or data-type :preview)
+        (let [command-owner (or (get-in chats [chat-id :commands (keyword command) :command-owner])
+                                chat-id)
+              data-type (or data-type :preview)
               path      [(if (= :response (keyword type)) :responses :commands)
                          (if content-command content-command command)
                          data-type]
@@ -301,7 +305,7 @@
                                             result
                                             (cu/generate-hiccup result))]) )
                              (when on-requested (on-requested %)))]
-          (status/call-jail chat-id path params callback))))))
+          (status/call-jail command-owner path params callback))))))
 
 (register-handler :set-command-parameter
   (fn [db [_ {:keys [value parameter]}]]
