@@ -120,27 +120,28 @@
   
 
 (defn add-group-chat-command-owner-and-name
-  [id commands]
+  [name id commands]
   (let [group-chat? (subscribe [:group-chat?])]
     (if @group-chat?
       (->> commands
            (map (fn [[k v]]
                   [k (assoc v
                          :command-owner (str id)
-                         :group-chat-command-name (str id "/" (:name v)))]))
+                         :group-chat-command-name (if name (str name "/" (:name v)) (:name v)))]))
            (into {}))
       commands)))
 
-(defn process-new-commands [account id commands]
+(defn process-new-commands [account id name commands]
   (->> commands
        (filter-forbidden-names account id)
-       (add-group-chat-command-owner-and-name id)
+       (add-group-chat-command-owner-and-name name id)
        (mark-as :command)))
 
 (defn add-commands
   [db [id _ {:keys [commands responses subscriptions]}]]
   (let [account        @(subscribe [:get-current-account])
-        commands'      (process-new-commands account id commands)
+        name           (get-in db [:contacts id :name])
+        commands'      (process-new-commands account id name commands)
         global-command (:global commands')
         commands''     (apply dissoc commands' [:init :global])
         responses'     (filter-forbidden-names account id responses)
