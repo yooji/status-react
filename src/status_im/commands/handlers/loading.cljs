@@ -120,47 +120,43 @@
 
 (defn add-group-chat-command-owner-and-name
   [name id commands]
-  (let [group-chat? (subscribe [:group-chat?])]
-    (if @group-chat?
-      (->> commands
-           (map (fn [[k v]]
-                  [k (assoc v
-                         :command-owner (str id)
-                         :group-chat-command-name (if name (str name "/" (:name v)) (:name v)))]))
-           (into {}))
-      commands)))
-
-(defn process-new-commands [account id name commands]
   (->> commands
-       (filter-forbidden-names account id)
-       (add-group-chat-command-owner-and-name name id)
-       (mark-as :command)))
+       (map (fn [[k v]]
+              [k (assoc v
+                        :command-owner (str id)
+                        :group-chat-command-name (if name (str name "/" (:name v)) (:name v)))]))
+       (into {})))
 
-(defn add-commands
-  [db [id _ {:keys [commands responses subscriptions]}]]
-  (let [account        @(subscribe [:get-current-account])
-        name           (get-in db [:contacts id :name])
-        commands'      (process-new-commands account id name commands)
-        global-command (:global commands')
-        commands''     (apply dissoc commands' [:init :global])
-        responses'     (filter-forbidden-names account id responses)
-        group-chat?    @(subscribe [:group-chat?])
+(defn process-new-group-chat-commands [account id name commands]
+    (as-> commands c
+       (filter-forbidden-names account id c)
+       (add-group-chat-command-owner-and-name name id c)
+       (mark-as :command c)
+       (apply dissoc c [:init :global])
+       ))
+
+(defn process-new-commands [account id commands]
+  (as-> commands c
+       (filter-forbidden-names account id c)
+       (mark-as :command c)
+       (apply dissoc c [:init :global])))
+
+(defn process-responses [account id responses]
+  (->> responses
+       (filter-forbidden-names account id)
+       (mark-as :response)))
+
+(defn add-group-chat-commands [db id commands responses subscriptions account]
+  (let [name             (get-in db [:contacts id :name])
+        commands'        (process-new-group-chat-commands account id name commands)
+        global-command   (:global commands')
         current-chat-id @(subscribe [:get-current-chat-id])
         current-commands (into {} (get-in db [:chats current-chat-id :commands]))]
     (cond-> db
-      
-      (get-in db [:chats id])
-      (update-in [:chats id] assoc
-                 :commands commands''
-                 :responses (mark-as :response responses')
-                 :commands-loaded true
-                 :subscriptions subscriptions
-                 :global-command global-command)
-
-      group-chat?
+      (get-in db [:chats current-chat-id])
       (update-in [:chats current-chat-id] assoc
-                 :commands (conj current-commands commands'')
-                 :responses (mark-as :response responses')
+                 :commands (conj current-commands commands')
+                 :responses responses
                  :commands-loaded true
                  :subscriptions subscriptions
                  :global-command global-command)
@@ -169,6 +165,35 @@
       (update :global-commands assoc (keyword id)
               (assoc global-command :bot id
                      :type :command)))))
+
+(defn add-single-chat-commands [db id commands responses subscriptions account]
+  (let [commands'      (process-new-commands account id commands)
+        global-command (:global commands')]
+    
+    (cond-> db
+      
+      (get-in db [:chats id])
+      (update-in [:chats id] assoc
+                 :commands commands'
+                 :responses responses
+                 :commands-loaded true
+                 :subscriptions subscriptions
+                 :global-command global-command)
+
+      global-command
+      (update :global-commands assoc (keyword id)
+              (assoc global-command :bot id
+                     :type :command)))))
+
+(defn add-commands
+  [db [id _ {:keys [commands responses subscriptions]}]]
+  (let [account     @(subscribe [:get-current-account])
+        responses'   (process-responses account id responses)
+        group-chat? @(subscribe [:group-chat?])]
+    (if group-chat?
+      (add-group-chat-commands db id commands responses' subscriptions account)
+      (add-single-chat-commands db id commands responses' subscriptions account))))
+
 
 (defn save-commands-js!
   [_ [id file]]
