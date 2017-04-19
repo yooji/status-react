@@ -19,7 +19,7 @@
 
 (defn make-web3 [rpc-url]
   (->> rpc-url
-       w3/RNBridgeProvider.
+       w3/get-provider
        web3.))
 
 (defn timestamp []
