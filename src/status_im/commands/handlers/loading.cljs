@@ -14,22 +14,22 @@
             [status-im.utils.js-resources :as js-res]
             [status-im.chat.sign-up :as sign-up]))
 
-(defn fetch-group-chat-commands [app-db group-chat-id callback contacts-key]
+(defn fetch-group-chat-commands [app-db group-chat-id contacts-key]
       (let [contacts (get-in app-db [:chats group-chat-id :contacts])
             identities (mapv :identity contacts)
             my-contacts (mapv #(get contacts-key %) identities)]
-        (doseq [contact my-contacts] (dispatch [::fetch-commands! {:contact contact
-                                                                   :callback callback}]))))
+        (doseq [contact my-contacts] (dispatch [::fetch-commands! {:contact contact}]))))
 
 (defn load-commands!
   [{:keys [current-chat-id contacts] :as db} [identity callback]]
   (let [identity (or identity current-chat-id)
         contact  (or (get contacts identity)
                      sign-up/console-contact)
+        commands-loaded (get-in db [:chats current-chat-id :commands-loaded])
         group-chat? (subscribe [:group-chat?])]
     (when identity
       (if @group-chat?
-        (fetch-group-chat-commands db identity callback contacts)
+        (fetch-group-chat-commands db identity contacts)
         (dispatch [::fetch-commands! {:contact  contact
                                       :callback callback}]))))
   ;; todo uncomment
@@ -116,8 +116,7 @@
                  (and
                    (not= console-chat-id id)
                    (h/matches (name n) "password"))))
-       (into {})))
-  
+       (into {})))  
 
 (defn add-group-chat-command-owner-and-name
   [name id commands]
@@ -202,8 +201,8 @@
 
 (reg-handler :check-and-load-commands!
   (u/side-effect!
-    (fn [{:keys [chats]} [identity callback]]
-      (if (get-in chats [identity :commands-loaded])
+   (fn [{:keys [chats current-chat-id]} [identity callback]]
+      (if (get-in chats [current-chat-id :commands-loaded])
         (callback)
         (dispatch [:load-commands! identity callback])))))
 
