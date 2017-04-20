@@ -123,17 +123,18 @@
    preview [:get-in [:message-data :preview message-id]]]
   (let [{:keys [command params]} (parse-command-message-content commands content)
         {:keys     [name type]
-         icon-path :icon} command]
+         icon-path :icon} command
+        command-name (or (:group-chat-command-name command) name)]
     [view st/content-command-view
      [view st/command-container
       [view (pill-st/pill command)
        [text {:style pill-st/pill-text
               :font  :default}
-        (str (if (= :command type) chat-consts/command-char "?") name)]]]
+        (str (if (= :command type) chat-consts/command-char "?") command-name)]]]
      (when icon-path
        [view st/command-image-view
         [icon icon-path st/command-image]])
-     [command-preview {:command         (:name command)
+     [command-preview {:command         name
                        :content-type    content-type
                        :params          params
                        :outgoing?       outgoing
