@@ -14,7 +14,7 @@
 
 (defn can-be-suggested? [first-char text]
   (fn [{:keys [name bot group-chat-command-name]}]
-    (s/starts-with? (s/lower-case (str first-char (or group-chat-command-name bot name))) text)))
+    (s/starts-with? (s/lower-case (str first-char (or group-chat-command-name bot name))) (s/lower-case text))))
 
 (defn get-suggestions
   [{:keys [current-chat-id global-commands] :as db} text]
