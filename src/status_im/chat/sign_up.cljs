@@ -30,7 +30,9 @@
 
 ;; -- Send phone number ----------------------------------------
 (defn on-sign-up-response [& [message]]
-  (let [message-id (random/id)]
+  (let [message-id (random/id)
+        group-chat?     (subscribe [:group-chat?])
+        current-chat-id (subscribe [:get-current-chat-id])]
     (dispatch [:received-message
                {:message-id   message-id
                 :content      (command-content
@@ -38,6 +40,7 @@
                                 (or message (label :t/confirmation-code)))
                 :content-type content-type-command-request
                 :outgoing     false
+                :group-id     (when @group-chat? @current-chat-id)
                 :chat-id      console-chat-id
                 :from         console-chat-id
                 :to           "me"}])))
@@ -58,14 +61,18 @@
 
 ;; -- Send confirmation code and synchronize contacts---------------------------
 (defn on-sync-contacts []
-  (dispatch [:received-message
-             {:message-id   (random/id)
-              :content      (label :t/contacts-syncronized)
-              :content-type text-content-type
-              :outgoing     false
-              :chat-id      console-chat-id
-              :from         console-chat-id
-              :to           "me"}])
+  (let [group-chat?     (subscribe [:group-chat?])
+        current-chat-id (subscribe [:get-current-chat-id])]
+
+    (dispatch [:received-message
+               {:message-id   (random/id)
+                :content      (label :t/contacts-syncronized)
+                :content-type text-content-type
+                :outgoing     false
+                :group-id     (when @group-chat? @current-chat-id)
+                :chat-id      console-chat-id
+                :from         console-chat-id
+                :to           "me"}]))
   (dispatch [:set-signed-up true]))
 
 (defn sync-contacts []
@@ -73,14 +80,18 @@
   (dispatch [:sync-contacts on-sync-contacts]))
 
 (defn on-send-code-response [body]
+  (let [group-chat?     (subscribe [:group-chat?])
+        current-chat-id (subscribe [:get-current-chat-id])]
+      
   (dispatch [:received-message
              {:message-id   (random/id)
               :content      (:message body)
               :content-type text-content-type
               :outgoing     false
+              :group-id     (when @group-chat? @current-chat-id)
               :chat-id      console-chat-id
               :from         console-chat-id
-              :to           "me"}])
+              :to           "me"}]))
   (let [status (keyword (:status body))]
     (when (= :confirmed status)
       (dispatch [:stop-listening-confirmation-code-sms])
