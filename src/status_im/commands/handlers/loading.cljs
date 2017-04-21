@@ -155,12 +155,14 @@
         commands'        (process-new-group-chat-commands account id name commands)
         global-command   (:global commands')
         current-chat-id @(subscribe [:get-current-chat-id])
-        current-commands (into {} (get-in db [:chats current-chat-id :commands]))]
+        current-commands (into {} (get-in db [:chats current-chat-id :commands]))
+        current-responses (into {} (get-in db [:chats current-chat-id :responses]))]
+
     (cond-> db
       (get-in db [:chats current-chat-id])
       (update-in [:chats current-chat-id] assoc
                  :commands (conj current-commands commands')
-                 :responses responses
+                 :responses (conj current-responses responses)
                  :commands-loaded true
                  :subscriptions subscriptions
                  :global-command global-command)
@@ -173,7 +175,7 @@
 (defn add-single-chat-commands [db id commands responses subscriptions account]
   (let [commands'      (process-new-commands account id commands)
         global-command (:global commands')]
-    
+
     (cond-> db
       
       (get-in db [:chats id])
