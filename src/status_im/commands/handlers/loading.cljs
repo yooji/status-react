@@ -122,9 +122,13 @@
   [name id commands]
   (->> commands
        (map (fn [[k v]]
-              [k (assoc v
-                        :command-owner (str id)
-                        :group-chat-command-name (if name (str name "/" (:name v)) (:name v)))]))
+              (let [wallet-command? (contains? #{"send" "request"} (:name v))]
+                [k (assoc v
+                          :command-owner (str id)
+                          :group-chat-command-name (cond
+                                                     wallet-command? (str "Wallet" "/" (:name v))
+                                                     name (str name "/" (:name v))
+                                                     :else (:name v)))])))
        (into {})))
 
 (defn process-new-group-chat-commands [account id name commands]
