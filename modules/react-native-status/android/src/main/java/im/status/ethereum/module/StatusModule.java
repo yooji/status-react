@@ -102,10 +102,7 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
 
         Activity currentActivity = getCurrentActivity();
 
-        File extStore = Environment.getExternalStorageDirectory();
-        String dataFolder = extStore.exists() ?
-                extStore.getAbsolutePath() + "/ethereum/testnet" :
-                currentActivity.getApplicationInfo().dataDir + "/ethereum/testnet";
+        String dataFolder = currentActivity.getApplicationInfo().dataDir + "/ethereum/testnet";
         Log.d(TAG, "Starting Geth node in folder: " + dataFolder);
 
         try {

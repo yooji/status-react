@@ -163,10 +163,7 @@
   (.registerComponent app-registry "StatusIm" #(r/reactify-component app-root))
   (dispatch [:listen-to-network-status!])
   (dispatch [:initialize-crypt])
-  (dispatch [:request-permissions
-             [:read-external-storage :write-external-storage]
-             #(dispatch [:initialize-geth])
-             #(dispatch [:account-generation-failure-message])])
+  (dispatch [:initialize-geth])
   (status/set-soft-input-mode status/adjust-resize)
   (dispatch [:load-user-phone-number])
   (init-back-button-handler!))
