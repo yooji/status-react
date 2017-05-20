@@ -63,7 +63,8 @@ public class MainApplication extends Application implements ReactApplication {
                     new WebViewBridgePackage(BuildConfig.DEBUG)
             ));
 
-            if (!BuildConfig.DEBUG) {
+            if (true /*!BuildConfig.DEBUG*/) {
+
                 packages.add(new RNInstabugReactnativePackage("b239f82a9cb00464e4c72cc703e6821e", MainApplication.this, "shake"));
             }
 

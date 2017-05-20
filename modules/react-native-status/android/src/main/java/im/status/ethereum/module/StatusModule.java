@@ -1,6 +1,7 @@
 package im.status.ethereum.module;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.os.*;
 import android.view.WindowManager;
 import android.util.Log;
@@ -25,6 +26,7 @@ import java.util.concurrent.Executors;
 
 import org.json.JSONObject;
 import org.json.JSONException;
+import com.instabug.library.Instabug;
 
 class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventListener, ConnectorHandler {
 
@@ -144,9 +146,19 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
         String defaultConfig = Statusgo.GenerateConfig(dataFolder, 3);
         try {
             JSONObject jsonConfig = new JSONObject(defaultConfig);
+            String gethLogFileName = "geth.log";
             jsonConfig.put("LogEnabled", this.debug);
-            jsonConfig.put("LogFile", "geth.log");
+            jsonConfig.put("LogFile", gethLogFileName);
             jsonConfig.put("LogLevel", "DEBUG");
+            String gethLogPath = dataFolder + "/" + gethLogFileName;
+            Uri gethLogUri = Uri.fromFile(new File(gethLogPath));
+            //try {
+
+            Log.d(TAG, "Attach to instabug" + gethLogUri.getPath());
+                Instabug.setFileAttachment(gethLogUri, gethLogFileName);
+            //} catch (NullPointerException e) {
+
+            //}
 
             config = jsonConfig.toString();
         } catch (JSONException e) {
