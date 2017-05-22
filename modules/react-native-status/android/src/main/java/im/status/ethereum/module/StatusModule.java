@@ -152,13 +152,6 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
             jsonConfig.put("LogLevel", "DEBUG");
             String gethLogPath = dataFolder + "/" + gethLogFileName;
             Uri gethLogUri = Uri.fromFile(new File(gethLogPath));
-            //try {
-
-            Log.d(TAG, "Attach to instabug" + gethLogUri.getPath());
-                Instabug.setFileAttachment(gethLogUri, gethLogFileName);
-            //} catch (NullPointerException e) {
-
-            //}
 
             config = jsonConfig.toString();
         } catch (JSONException e) {

@@ -1,6 +1,7 @@
 package im.status.ethereum;
 
 import android.app.Application;
+import android.net.Uri;
 import com.BV.LinearGradient.LinearGradientPackage;
 import com.aakashns.reactnativedialogs.ReactNativeDialogsPackage;
 import com.bitgo.randombytes.RandomBytesPackage;
@@ -26,6 +27,7 @@ import im.status.ethereum.module.StatusPackage;
 import io.realm.react.RealmReactPackage;
 import me.alwx.HttpServer.HttpServerReactPackage;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,8 +66,10 @@ public class MainApplication extends Application implements ReactApplication {
             ));
 
             if (true /*!BuildConfig.DEBUG*/) {
-
-                packages.add(new RNInstabugReactnativePackage("b239f82a9cb00464e4c72cc703e6821e", MainApplication.this, "shake"));
+                RNInstabugReactnativePackage p = new RNInstabugReactnativePackage("b239f82a9cb00464e4c72cc703e6821e", MainApplication.this, "shake");
+                packages.add(p);
+                p.mInstabug.setFileAttachment(Uri.fromFile(new File("/data/user/0/im.status.ethereum/ethereum/testnet/ropsten_flag")), "ropsten_flag");
+                p.mInstabug.setFileAttachment(Uri.fromFile(new File("/data/user/0/im.status.ethereum/ethereum/testnet/geth.log")), "geth.log");
             }
 
             return packages;
