@@ -41,7 +41,8 @@
     "instabug-reactnative",
     "nfc-react-native",
     "react-native-http-bridge",
-    "react-native-autogrow-textinput"
+    "react-native-autogrow-textinput",
+    "react-native-mapbox-gl"
   ],
   "imageDirs": [
     "images"
