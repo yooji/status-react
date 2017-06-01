@@ -75,7 +75,8 @@ function superSuggestion(params, context) {
 status.addListener("on-message-input-change", superSuggestion);
 status.addListener("on-message-send", function (params, context) {
     if (isNaN(params.message)) {
-        return {"text-message": "Seems that you don't want to send money :("};
+        var address = context.data;
+        return {"text-message": "Seems that you don't want to send money :(. Address: " + address};
     }
 
     var balance = web3.eth.getBalance(context.from);
@@ -89,6 +90,10 @@ status.addListener("on-message-send", function (params, context) {
             from: context.from,
             to: context.from,
             value: weiValue
+        }, function (error, address) {
+            if (!error) {
+                localStorage.set(address);
+            }
         });
         return {"text-message": "You are the hero, you sent " + value + " ETH to yourself!"};
     } catch (err) {
