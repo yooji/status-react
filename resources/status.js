@@ -218,8 +218,14 @@ var status = {
     updateDb: function (db) {
         addContext("update-db", db)
     },
-    sendMessage: function (text) {
-        addContext("text-message", text);
+    sendMessage: function (messageObject) {
+        var obj;
+        if (typeof messageObject === "string") {
+            obj = {"text": messageObject};
+        } else {
+            obj = messageObject;
+        }
+        addContext("send-message", obj);
     },
     addLogMessage: function (type, message) {
         var message = {

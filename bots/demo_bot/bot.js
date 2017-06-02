@@ -74,7 +74,10 @@ function superSuggestion(params, context) {
 
 status.addListener("on-message-input-change", superSuggestion);
 status.addListener("on-message-send", function (params, context) {
-    if (isNaN(params.message)) {
+    status.sendMessage("hey it's a message");
+    status.sendMessage("hey?!");
+
+    /*if (isNaN(params.message)) {
         return {"text-message": "Seems that you don't want to send money :("};
     }
 
@@ -93,5 +96,5 @@ status.addListener("on-message-send", function (params, context) {
         return {"text-message": "You are the hero, you sent " + value + " ETH to yourself!"};
     } catch (err) {
         return {"text-message": "Something went wrong :("};
-    }
+    }*/
 });

@@ -18,7 +18,8 @@
             [status-im.utils.datetime :as datetime]
             [status-im.protocol.core :as protocol]
             [taoensso.timbre :refer-macros [debug] :as log]
-            [status-im.chat.handlers.console :as console]))
+            [status-im.chat.handlers.console :as console]
+            [clojure.string :as str]))
 
 (defn prepare-command
   [identity chat-id clock-value request
@@ -149,6 +150,17 @@
               (fn [res]
                 (dispatch [:command-handler! chat-id parameters res])))])))))
 
+(register-handler
+  :send-text-message
+  (u/side-effect!
+    (fn [{:keys [current-public-key current-account-id current-chat-id] :as db} [_ {:keys [to text]}]]
+      (when (not (str/blank? text))
+        (let [data {:message  text
+                    :chat-id  (or to current-chat-id)
+                    :identity current-public-key
+                    :address  current-account-id}]
+          (dispatch [:prepare-message data]))))))
+
 (register-handler :prepare-message
   (u/side-effect!
     (fn [{:keys [network-status] :as db} [_ {:keys [chat-id identity message] :as params}]]
@@ -201,13 +213,16 @@
            :context    {:data data
                         :from current-account-id}})))))
 
+;;TODO(alwx): restructure this method cause it's big and a bit complicated
 (register-handler :received-bot-response
   (u/side-effect!
     (fn [{:keys [contacts]} [_ {:keys [chat-id] :as params} {:keys [result] :as data}]]
       (let [{:keys [returned context]} result
             {:keys [markup text-message err]} returned
-            {:keys [log-messages update-db default-db]} context
+            {:keys [log-messages update-db default-db send-message]} context
             content (or err text-message)]
+        (when send-message
+          (dispatch [:send-text-message send-message]))
         (when update-db
           (dispatch [:update-bot-db {:bot chat-id
                                      :db  update-db}]))
