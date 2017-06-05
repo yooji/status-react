@@ -277,6 +277,8 @@ console = (function (old) {
     };
 }(console));
 
+var localStorage = {};
+
 localStorage.setItem = function(key, value) {
     localStorageData[key] = value;
     localStorage.set(JSON.stringify(localStorageData));
