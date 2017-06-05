@@ -201,11 +201,23 @@
   (u/side-effect!
     (fn [_ _]
       (dispatch [:request-permissions [:geolocation]
-                 (fn [] (.getCurrentPosition
-                          navigator.geolocation
-                          #(dispatch [:update-geolocation (js->clj % :keywordize-keys true)])
-                          #(dispatch [:update-geolocation (js->clj % :keywordize-keys true)])
-                          (clj->js {:enableHighAccuracy true :timeout 20000 :maximumAge 1000})))]))))
+                 (fn []
+                   (let [watch-id (atom nil)]
+                     (.getCurrentPosition
+                       navigator.geolocation
+                       #(dispatch [:update-geolocation (js->clj % :keywordize-keys true)])
+                       #(dispatch [:update-geolocation (js->clj % :keywordize-keys true)])
+                       (clj->js {:enableHighAccuracy true :timeout 20000 :maximumAge 1000}))
+                     (when p/android?
+                       (reset! watch-id
+                               (.watchPosition
+                                 navigator.geolocation
+                                 #(do
+                                    (.clearWatch
+                                      navigator.geolocation
+                                      @watch-id)
+                                    (dispatch [:update-geolocation (js->clj % :keywordize-keys true)]))))
+                       (dispatch [:set-in [:debug :watch-id] @watch-id]))))]))))
 
 (register-handler :update-geolocation
   (fn [db [_ geolocation]]

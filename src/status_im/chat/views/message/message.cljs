@@ -137,11 +137,12 @@
         {:keys     [name type]
          icon-path :icon} command]
     [view st/content-command-view
-     [view st/command-container
-      [view (pill-st/pill command)
-       [text {:style pill-st/pill-text
-              :font  :default}
-        (str (if (= :command type) chat-consts/command-char "?") name)]]]
+     (when (:color command)
+       [view st/command-container
+        [view (pill-st/pill command)
+         [text {:style pill-st/pill-text
+                :font  :default}
+          (str (if (= :command type) chat-consts/command-char "?") name)]]])
      (when icon-path
        [view st/command-image-view
         [icon icon-path st/command-image]])

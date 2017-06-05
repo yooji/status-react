@@ -42,6 +42,7 @@ status.command({
         suggestions: locationsSuggestions
     }],
     preview: function (params) {
+        var address =  decodeURIComponent(params.address);
         var text = status.components.text(
             {
                 style: {
@@ -52,11 +53,10 @@ status.command({
                     fontFamily: "font",
                     color: "black"
                 }
-            }, params.address);
+            }, address);
         var uri = "https://maps.googleapis.com/maps/api/staticmap?center="
-            + params.address
-            + "&size=100x100&maptype=roadmap&key=AIzaSyBNsj1qoQEYPb3IllmWMAscuXW0eeuYqAA&language=en"
-            + params.address;
+            + address
+            + "&size=176x58&maptype=roadmap&key=AIzaSyBNsj1qoQEYPb3IllmWMAscuXW0eeuYqAA&language=en"
 
         var image = status.components.image(
             {

@@ -3,6 +3,7 @@
                    [reagent.ratom :refer [reaction]])
   (:require [status-im.components.react :refer [view image text touchable-highlight]]
             [reagent.core :as r]
+            [goog.string :as gstr]
             [status-im.utils.utils :refer [http-get]]
             [status-im.utils.types :refer [json->clj]]
             [status-im.chat.views.geolocation.styles :as st]
@@ -25,7 +26,7 @@
 
 (defn place-item [{:keys [title address pin-style]}]
   [touchable-highlight {:on-press #(do
-                                     (dispatch [:set-command-argument [0 (or address title) false]])
+                                     (dispatch [:set-command-argument [0 (gstr/urlEncode (or address title)) false]])
                                      (dispatch [:send-seq-argument]))}
    [view (st/place-item-container address)
     [view st/place-item-title-container
