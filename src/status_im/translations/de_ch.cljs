@@ -117,10 +117,10 @@
    :contacts-group-people                 "Leute"
    :contacts-group-new-chat               "Starte neuer Chat"
    :no-contacts                           "Noch keine Kontakte"
-   :show-qr                               "Zeige QR"
+   :show-qr                               "QR-Code anzeigen"
 
    ;group-settings
-   :remove                                "Entferne"
+   :remove                                "Entfernen"
    :save                                  "Speichern"
    :change-color                          "Farbe ändern"
    :clear-history                         "Verlauf löschen"
@@ -151,8 +151,8 @@
 
    ;new-group
    :group-chat-name                       "Chat Name"
-   :empty-group-chat-name                 "Bitte gib einen Namen ein"
-   :illegal-group-chat-name               "Bitte wähle einen anderen Namen aus"
+   :empty-group-chat-name                 "Bitte gib einen Gruppennamen ein"
+   :illegal-group-chat-name               "Gruppenname nicht verfügbar"
 
    ;participants
    :add-participants                      "Teilnehmer hinzufügen"
@@ -167,13 +167,13 @@
    :You                                   "Du"
 
    ;new-contact
-   :add-new-contact                       "Teilnehmer hinzufügen"
+   :add-new-contact                       "Neuen Kontakt hinzufügen"
    :import-qr                             "Importieren"
    :scan-qr                               "QR scannen"
    :name                                  "Name"
    :whisper-identity                      "Identität flüstern" 
    :address-explication                   "Vielleicht sollte hier ein Text stehen der erklärt, was eine Adresse ist und wo man suchen soll"
-   :enter-valid-address                   "Bitte gebe eine gültige Adresse ein oder scannen den QR-Code"
+   :enter-valid-address                   "Bitte gebe eine gültige Adresse ein oder scanne den QR-Code"
    :contact-already-added                 "Der Kontakt wurde bereits hinzugefügt"
    :can-not-add-yourself                  "Du kannst dich nicht selbst hinzufügen"
    :unknown-address                       "Unbekannte Adresse"
