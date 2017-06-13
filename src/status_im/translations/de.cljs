@@ -15,7 +15,7 @@
    :switch-users                          "Benutzer wechseln"
 
    ;chat
-   :is-typing                             "gibt ein"
+   :is-typing                             "schreibt"
    :and-you                               "und Sie"
    :search-chat                           "Chat durchsuchen"
    :members                               {:one   "1 Mitglied"
@@ -61,7 +61,7 @@
 
    ;profile
    :profile                               "Profil"
-   :report-user                           "BENUTZER MELDEN"
+   :report-user                           "Benutzer melden"
    :message                               "Nachricht"
    :username                              "Benutzername"
    :not-specified                         "Nicht angegeben"
@@ -113,7 +113,7 @@
    ;contacts
    :contacts                              "Kontakte"
    :new-contact                           "Neuer Kontakt"
-   :show-all                              "ALLE ANZEIGEN"
+   :show-all                              "Alle Anzeigen"
    :contacts-group-dapps                  "ÐApps"
    :contacts-group-people                 "Leute"
    :contacts-group-new-chat               "Neuen Chat beginnen"
@@ -136,7 +136,7 @@
 
    ;commands
    :money-command-description             "Geld senden"
-   :location-command-description          "Position senden"
+   :location-command-description          "Standort senden"
    :phone-command-description             "Telefonnummer senden"
    :phone-request-text                    "Telefonnummer anfragen"
    :confirmation-code-command-description "Bestätitungscode senden"
@@ -152,8 +152,8 @@
 
    ;new-group
    :group-chat-name                       "Chatname"
-   :empty-group-chat-name                 "Bitte geben Sie einen Namen ein"
-   :illegal-group-chat-name               "Bitte wählen Sie einen anderen Namen"
+   :empty-group-chat-name                 "Bitte geben Sie einen Gruppennamen ein"
+   :illegal-group-chat-name               "Gruppenname nicht verfügbar"
 
    ;participants
    :add-participants                      "Teilnehmer hinzufügen"
@@ -206,7 +206,7 @@
    ;validation
    :invalid-phone                         "Ungültige Telefonnummer"
    :amount                                "Betrag"
-   :not-enough-eth                        (str "Nicht genug EHT auf dem Konto"
+   :not-enough-eth                        (str "Nicht genug ETH auf dem Konto"
                                                "({{balance}} ETH)")
    ;transactions
    :confirm-transactions                  {:one   "Transaktion bestätigen"
@@ -216,7 +216,7 @@
    :pending-confirmation                  "Bestätigung in Bearbeitung"
    :recipient                             "Empfänger"
    :one-more-item                         "Noch ein Objekt"
-   :fee                                   "Gebühr"
+   :fee                                   "Gebühren"
    :value                                 "Wert"
 
    ;:webview
